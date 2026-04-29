@@ -1,4 +1,4 @@
-const CACHE_NAME = "tennis-score-v3";
+const CACHE_NAME = "tennis-score-v4-report";
 
 const FILES = [
   "./",
