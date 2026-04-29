@@ -1,7 +1,14 @@
 # placar-tenis
 App de marcação de placar de jogo de tênis feito por um pai babão.
 
-Placar de Tênis - v4 report
+Placar de Tênis - v5:
+- Adicionado banner de instalação no iPhone quando aberto fora do modo standalone.
+- O banner orienta: Safari > Compartilhar > Adicionar à Tela de Início.
+- Não altera o motor de pontuação nem os relatórios da v4.
+
+
+
+Placar de Tênis - v4:
 
 Base: v3.
 Alteração:
@@ -25,7 +32,7 @@ Para atualizar no iPhone:
 3. Abra no Safari.
 4. Adicione novamente à Tela de Início.
 
-Placar de Tênis - v3
+Placar de Tênis - v3:
 
 Inclui:
 - motor com set por diferença de 2 games ou tie-break no empate limite
