@@ -235,51 +235,255 @@ function winnerName(){if(match.score.sets[0]>match.score.sets[1])return match.pl
 function percent(n,d){return d?`${Math.round((n/d)*100)}%`:"0%";}
 function firstServeIn(i){return match.stats.servicePointsPlayed[i]-match.stats.firstServeFaults[i];}
 
-function generateReport(){
-  if(!match)return"Nenhuma partida registrada.";
-  const started=new Date(match.meta.startedAt).toLocaleString("pt-BR"), finished=match.meta.finishedAt?new Date(match.meta.finishedAt).toLocaleString("pt-BR"):"partida em andamento";
-  let t="PARTIDA DE TÊNIS\\n\\n";
-  t+=`Início: ${started}\\nFim: ${finished}\\n\\n`;
-  t+=`Jogadores:\\n${match.players[0]} x ${match.players[1]}\\n\\n`;
-  t+="Configuração:\\n";
-  t+=`- Regra de vantagem: ${match.config.advantage?"com vantagem":"sem vantagem / No-Ad"}\\n- Games por set: ${match.config.gamesPerSet}\\n- Sets para vencer: ${match.config.setsToWin}\\n`;
-  t+=`- Fechamento do set: ${match.config.setEndRule==="tiebreak"?"tie-break no empate limite":"diferença de 2 games"}\\n- Set decisivo: ${match.config.finalSetMode==="super_tiebreak"?"tie-breakão até 10":"set normal"}\\n- Sacador inicial: ${match.players[match.config.firstServer]}\\n\\n`;
-  t+="Resultado:\\n";
-  t+=`- Sets: ${match.players[0]} ${match.score.sets[0]} x ${match.score.sets[1]} ${match.players[1]}\\n`;
-  if(!match.score.matchOver)t+=`- Games do set atual: ${match.score.games[0]} x ${match.score.games[1]}\\n`;
-  if(match.score.matchOver)t+=`- Vencedor: ${winnerName()}\\n`;
-  t+="\\nResumo:\\n";
-  t+=`- Pontos vencidos: ${match.players[0]} ${match.stats.pointsWon[0]} | ${match.players[1]} ${match.stats.pointsWon[1]}\\n`;
-  t+=`- Games vencidos: ${match.players[0]} ${match.stats.gamesWon[0]} | ${match.players[1]} ${match.stats.gamesWon[1]}\\n`;
-  t+=`- Deuces: ${match.stats.deuces}\\n- Games decididos em No-Ad: ${match.stats.noAdGames}\\n`;
-  t+=`- Quebras de saque: ${match.players[0]} ${match.stats.breaks[0]} | ${match.players[1]} ${match.stats.breaks[1]}\\n`;
-  t+=`- Aces: ${match.players[0]} ${match.stats.aces[0]} | ${match.players[1]} ${match.stats.aces[1]}\\n`;
-  t+=`- Service winners: ${match.players[0]} ${match.stats.serviceWinners[0]} | ${match.players[1]} ${match.stats.serviceWinners[1]}\\n`;
-  t+=`- Winners: ${match.players[0]} ${match.stats.winners[0]} | ${match.players[1]} ${match.stats.winners[1]}\\n`;
-  t+=`- Erros forçados: ${match.players[0]} ${match.stats.forcedErrors[0]} | ${match.players[1]} ${match.stats.forcedErrors[1]}\\n`;
-  t+=`- Erros não forçados: ${match.players[0]} ${match.stats.unforcedErrors[0]} | ${match.players[1]} ${match.stats.unforcedErrors[1]}\\n`;
-  t+=`- Duplas faltas: ${match.players[0]} ${match.stats.doubleFaults[0]} | ${match.players[1]} ${match.stats.doubleFaults[1]}\\n\\n`;
-  t+="Saque:\\n";
-  [0,1].forEach(i=>{
-    const sp=match.stats.servicePointsPlayed[i], fsIn=firstServeIn(i), second=match.stats.firstServeFaults[i];
-    t+=`${match.players[i]}:\\n- Pontos sacados: ${sp}\\n- Erros de 1º saque: ${match.stats.firstServeFaults[i]}\\n- 1º saque em quadra: ${fsIn} (${percent(fsIn,sp)})\\n- Duplas faltas: ${match.stats.doubleFaults[i]}\\n- Pontos vencidos com 1º saque: ${match.stats.firstServePointsWon[i]} (${percent(match.stats.firstServePointsWon[i],fsIn)})\\n- Pontos jogados com 2º saque: ${second}\\n- Pontos vencidos com 2º saque: ${match.stats.secondServePointsWon[i]} (${percent(match.stats.secondServePointsWon[i],second)})\\n`;
-  });
-  t+="\\nDetalhamento dos sets:\\n";
-  if(match.setsHistory.length===0)t+="Nenhum set finalizado.\\n";else match.setsHistory.forEach(s=>{t+=s.kind==="super_tiebreak"?`Set ${s.number}: ${match.players[s.winner]} venceu no tie-breakão ${s.tiebreak.displayScore}\\n`:s.kind==="tiebreak"?`Set ${s.number}: ${match.players[s.winner]} venceu ${s.games[0]}-${s.games[1]} (${s.tiebreak.displayScore})\\n`:`Set ${s.number}: ${match.players[s.winner]} venceu ${s.games[0]}-${s.games[1]}\\n`;});
-  t+="\\nDetalhamento dos games e tie-breaks:\\n";
-  if(match.gamesHistory.length===0)t+="Nenhum game finalizado.\\n";else{
-    let current=null;
-    match.gamesHistory.forEach(item=>{
-      if(current!==item.setNumber){current=item.setNumber;t+=`\\nSet ${current}\\n`;}
-      if(item.type==="game"){t+=`${item.gameNumber}. ${match.players[item.winner]} venceu por ${item.displayScore} | Sacador: ${match.players[item.server]}`;if(item.wasBreak)t+=" | Quebra de saque";if(item.hadDeuce)t+=" | Houve deuce";if(item.endedByNoAd)t+=" | Decidido em No-Ad";t+="\\n";}
-      else t+=`${item.isSuperTiebreak?"Tie-breakão":"Tie-break"}: ${match.players[item.winner]} venceu por ${item.displayScore}\\n`;
-      const pts=item.classifiedPoints.map((p,idx)=>`${idx+1}) ${match.players[p.winner]} - ${typeLabels[p.type]||p.type} (${p.serveNumber}º saque${p.firstServeFault?" após erro no 1º saque":""})`).join("; ");
-      t+=`   Pontos: ${pts}\\n`;
-    });
+
+function formatDateTime(value){
+  if(!value)return "partida em andamento";
+  return new Date(value).toLocaleString("pt-BR");
+}
+
+function pct(n,d){
+  if(!d)return "0%";
+  return `${Math.round((n/d)*100)}%`;
+}
+
+function playerLine(values){
+  return `${match.players[0]} ${values[0]} | ${match.players[1]} ${values[1]}`;
+}
+
+function setScoreLine(){
+  if(match.setsHistory.length===0){
+    return "Set em andamento";
   }
+
+  return match.setsHistory.map(set=>{
+    if(set.kind==="super_tiebreak"){
+      return `TB10 ${set.tiebreak.displayScore}`;
+    }
+    if(set.kind==="tiebreak"){
+      return `${set.games[0]}-${set.games[1]} (${set.tiebreak.displayScore})`;
+    }
+    return `${set.games[0]}-${set.games[1]}`;
+  }).join(" | ");
+}
+
+function buildHeaderBlock(){
+  let t="🎾 PARTIDA DE TÊNIS\n\n";
+  t+=`${match.players[0]} x ${match.players[1]}\n`;
+  t+=`Início: ${formatDateTime(match.meta.startedAt)}\n`;
+  t+=`Fim: ${formatDateTime(match.meta.finishedAt)}\n\n`;
   return t;
 }
 
-async function copyStats(){const r=generateReport();try{await navigator.clipboard.writeText(r);alert("Estatísticas copiadas.");}catch(e){fallbackCopy(r);}}
-function fallbackCopy(text){const a=document.createElement("textarea");a.value=text;a.style.position="fixed";a.style.opacity="0";document.body.appendChild(a);a.focus();a.select();document.execCommand("copy");document.body.removeChild(a);alert("Estatísticas copiadas.");}
+function buildResultBlock(){
+  let t="🏆 RESULTADO\n";
+
+  if(match.score.matchOver){
+    t+=`${winnerName()} venceu por ${Math.max(match.score.sets[0],match.score.sets[1])} sets a ${Math.min(match.score.sets[0],match.score.sets[1])}\n`;
+  }else{
+    t+="Partida em andamento\n";
+  }
+
+  t+=`Sets: ${setScoreLine()}\n`;
+  if(!match.score.matchOver){
+    if(match.score.inTiebreak){
+      t+=`Tie-break atual: ${match.score.tiebreakPoints[0]}-${match.score.tiebreakPoints[1]}\n`;
+    }else{
+      t+=`Games do set atual: ${match.score.games[0]}-${match.score.games[1]}\n`;
+    }
+  }
+  t+="\n";
+  return t;
+}
+
+function buildConfigBlock(){
+  let t="⚙️ CONFIGURAÇÃO\n";
+  t+=`Vantagem: ${match.config.advantage?"Com vantagem":"Sem vantagem / No-Ad"}\n`;
+  t+=`Set: ${match.config.setEndRule==="tiebreak"?"Tie-break no empate limite":"Sempre diferença de 2 games"}\n`;
+  t+=`Decisivo: ${match.config.finalSetMode==="super_tiebreak"?"Tie-breakão até 10":"Set normal"}\n`;
+  t+=`Games por set: ${match.config.gamesPerSet}\n`;
+  t+=`Sets para vencer: ${match.config.setsToWin}\n`;
+  t+=`Sacador inicial: ${match.players[match.config.firstServer]}\n\n`;
+  return t;
+}
+
+function buildGeneralStatsBlock(){
+  let t="📊 RESUMO GERAL\n";
+  t+="Pontos:\n";
+  t+=`${playerLine(match.stats.pointsWon)}\n\n`;
+  t+="Games:\n";
+  t+=`${playerLine(match.stats.gamesWon)}\n\n`;
+  t+="Quebras:\n";
+  t+=`${playerLine(match.stats.breaks)}\n\n`;
+  t+=`Deuces: ${match.stats.deuces}\n`;
+  t+=`Games No-Ad: ${match.stats.noAdGames}\n\n`;
+  return t;
+}
+
+function buildShotStatsBlock(){
+  let t="🎯 GOLPES\n";
+
+  t+="Aces:\n";
+  t+=`${playerLine(match.stats.aces)}\n\n`;
+
+  t+="Service winners:\n";
+  t+=`${playerLine(match.stats.serviceWinners)}\n\n`;
+
+  t+="Winners:\n";
+  t+=`${playerLine(match.stats.winners)}\n\n`;
+
+  t+="Erros forçados:\n";
+  t+=`${playerLine(match.stats.forcedErrors)}\n\n`;
+
+  t+="Erros não forçados:\n";
+  t+=`${playerLine(match.stats.unforcedErrors)}\n\n`;
+
+  t+="Duplas faltas:\n";
+  t+=`${playerLine(match.stats.doubleFaults)}\n\n`;
+
+  return t;
+}
+
+function buildServeStatsBlock(){
+  let t="🎾 SAQUE\n\n";
+
+  [0,1].forEach(i=>{
+    const sp=match.stats.servicePointsPlayed[i];
+    const fsFaults=match.stats.firstServeFaults[i];
+    const fsIn=firstServeIn(i);
+    const secondPlayed=fsFaults;
+
+    t+=`${match.players[i]}\n`;
+    t+=`Pontos sacados: ${sp}\n`;
+    t+=`1º saque em quadra: ${fsIn}/${sp} (${pct(fsIn,sp)})\n`;
+    t+=`Erros de 1º saque: ${fsFaults}\n`;
+    t+=`Duplas faltas: ${match.stats.doubleFaults[i]}\n`;
+    t+=`Pontos vencidos com 1º saque: ${match.stats.firstServePointsWon[i]}/${fsIn} (${pct(match.stats.firstServePointsWon[i],fsIn)})\n`;
+    t+=`Pontos vencidos com 2º saque: ${match.stats.secondServePointsWon[i]}/${secondPlayed} (${pct(match.stats.secondServePointsWon[i],secondPlayed)})\n\n`;
+  });
+
+  return t;
+}
+
+function buildSetsBlock(){
+  let t="📌 SETS\n";
+
+  if(match.setsHistory.length===0){
+    t+="Nenhum set finalizado.\n\n";
+    return t;
+  }
+
+  match.setsHistory.forEach(set=>{
+    if(set.kind==="super_tiebreak"){
+      t+=`Set ${set.number}: ${match.players[set.winner]} venceu no tie-breakão ${set.tiebreak.displayScore}\n`;
+    }else if(set.kind==="tiebreak"){
+      t+=`Set ${set.number}: ${match.players[set.winner]} venceu ${set.games[0]}-${set.games[1]} (${set.tiebreak.displayScore})\n`;
+    }else{
+      t+=`Set ${set.number}: ${match.players[set.winner]} venceu ${set.games[0]}-${set.games[1]}\n`;
+    }
+  });
+
+  t+="\n";
+  return t;
+}
+
+function buildGamesBlock(includePoints){
+  let t="📋 GAMES\n";
+
+  if(match.gamesHistory.length===0){
+    t+="Nenhum game finalizado.\n";
+    return t;
+  }
+
+  let currentSet=null;
+
+  match.gamesHistory.forEach(item=>{
+    if(currentSet!==item.setNumber){
+      currentSet=item.setNumber;
+      t+=`\nSET ${currentSet}\n`;
+    }
+
+    if(item.type==="game"){
+      t+=`${item.gameNumber}. ${match.players[item.winner]} venceu ${item.displayScore}`;
+      t+=` | Sacador: ${match.players[item.server]}`;
+      if(item.wasBreak)t+=" | Quebra";
+      if(item.hadDeuce)t+=" | Deuce";
+      if(item.endedByNoAd)t+=" | No-Ad";
+      t+="\n";
+    }else{
+      t+=`${item.isSuperTiebreak?"Tie-breakão":"Tie-break"}: ${match.players[item.winner]} venceu ${item.displayScore}\n`;
+    }
+
+    if(includePoints){
+      const pts=item.classifiedPoints.map((p,idx)=>{
+        const serveInfo=`${p.serveNumber}º saque`;
+        const faultInfo=p.firstServeFault?" após erro no 1º saque":"";
+        return `${idx+1}) ${match.players[p.winner]} - ${typeLabels[p.type]||p.type} (${serveInfo}${faultInfo})`;
+      }).join("; ");
+
+      if(pts)t+=`   Pontos: ${pts}\n`;
+    }
+  });
+
+  return t;
+}
+
+function generateSummaryReport(){
+  if(!match)return "Nenhuma partida registrada.";
+
+  let t="";
+  t+=buildHeaderBlock();
+  t+=buildResultBlock();
+  t+=buildConfigBlock();
+  t+=buildGeneralStatsBlock();
+  t+=buildShotStatsBlock();
+  t+=buildServeStatsBlock();
+  t+=buildSetsBlock();
+
+  return t.trim();
+}
+
+function generateFullReport(){
+  if(!match)return "Nenhuma partida registrada.";
+
+  let t=generateSummaryReport();
+  t+="\n\n";
+  t+=buildGamesBlock(true);
+
+  return t.trim();
+}
+
+async function copyTextToClipboard(text,successMessage){
+  try{
+    await navigator.clipboard.writeText(text);
+    alert(successMessage);
+  }catch(e){
+    fallbackCopy(text,successMessage);
+  }
+}
+
+function copySummary(){
+  copyTextToClipboard(generateSummaryReport(),"Resumo copiado.");
+}
+
+function copyFull(){
+  copyTextToClipboard(generateFullReport(),"Relatório completo copiado.");
+}
+
+function copyStats(){
+  copyFull();
+}
+
+function fallbackCopy(text,successMessage="Texto copiado."){
+  const area=document.createElement("textarea");
+  area.value=text;
+  area.style.position="fixed";
+  area.style.opacity="0";
+  document.body.appendChild(area);
+  area.focus();
+  area.select();
+  document.execCommand("copy");
+  document.body.removeChild(area);
+  alert(successMessage);
+}
+
 function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(match));}
