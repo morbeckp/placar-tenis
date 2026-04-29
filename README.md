@@ -1,6 +1,30 @@
 # placar-tenis
 App de marcação de placar de jogo de tênis feito por um pai babão.
 
+Placar de Tênis - v4 report
+
+Base: v3.
+Alteração:
+- Mantido o motor de placar.
+- Relatório refatorado e melhor formatado.
+- Dois botões:
+  - Copiar resumo
+  - Copiar completo
+
+Inclui:
+- tie-break normal
+- tie-breakão decisivo
+- erro de saque / dupla falta automática
+- estatísticas de saque
+- overlay em tela cheia
+- PWA com ícones
+
+Para atualizar no iPhone:
+1. Publique os arquivos.
+2. Apague o app antigo da Tela de Início.
+3. Abra no Safari.
+4. Adicione novamente à Tela de Início.
+
 Placar de Tênis - v3
 
 Inclui:
