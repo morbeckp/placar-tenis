@@ -1,12 +1,17 @@
 # placar-tenis
 App de marcação de placar de jogo de tênis feito por um pai babão.
 
+Placar de Tênis - v6:
+- Tela de instalação em full-screen quando o app não está em modo standalone.
+- Usa o ícone do app na tela de instalação.
+- Instruções variam por iOS/Android e navegador detectado.
+- Se instalado e em retrato, mostra "Gire o telefone".
+- Mantém motor, regras e relatórios da v5/v4.
+
 Placar de Tênis - v5:
 - Adicionado banner de instalação no iPhone quando aberto fora do modo standalone.
 - O banner orienta: Safari > Compartilhar > Adicionar à Tela de Início.
 - Não altera o motor de pontuação nem os relatórios da v4.
-
-
 
 Placar de Tênis - v4:
 
