@@ -1,6 +1,18 @@
 # placar-tenis
 App de marcação de placar de jogo de tênis feito por um pai babão.
 
+Placar de Tênis - v7:
+- Corrigida a detecção de standalone no iOS: usa navigator.standalone no iOS.
+- A tela de instalação aparece sempre que o app não estiver instalado.
+- O botão "Continuar no navegador" só oculta na sessão atual; ao recarregar, volta se não estiver instalado.
+- Manifest ajustado para Android/Chrome:
+  - id: "./"
+  - start_url: "./"
+  - scope: "./"
+  - purpose: "any maskable"
+- Service Worker mais tolerante: se um arquivo falhar no cache, não quebra toda a instalação.
+- Cache atualizado para tennis-score-v7-pwa-install-fix.
+
 Placar de Tênis - v6:
 - Tela de instalação em full-screen quando o app não está em modo standalone.
 - Usa o ícone do app na tela de instalação.
@@ -52,6 +64,9 @@ Inclui:
 - layout em paisagem
 - PWA básico compatível com GitHub Pages
 
-Observações:
-- Abra via HTTP/HTTPS. PWA não funciona corretamente em file://.
-- Ao atualizar no iPhone, apague o ícone antigo da Tela de Início e reinstale.
+
+Para Android/Chrome:
+1. Publicar via HTTPS.
+2. Abrir o site.
+3. Verificar se aparece "Instalar app" no menu ou na tela do app.
+4. Se não aparecer, limpar dados do site no Chrome e recarregar.
