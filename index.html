@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#111827" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Tênis Score" />
+<title>Placar de Tênis</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="portraitBlocker"><div><strong>Gire o telefone</strong><span>Este app foi desenhado para modo paisagem.</span></div></div>
+<main class="app">
+<section id="installGate" class="install-gate hidden">
+  <div class="install-card">
+    <img class="install-icon" src="icons/icon-192.png" alt="Ícone do Placar de Tênis" />
+    <h1>Instalar Placar de Tênis</h1>
+    <p id="installLead" class="install-lead">Este app funciona melhor quando adicionado à Tela de Início.</p>
+    <div id="installInstructions" class="install-instructions"></div>
+    <div class="install-actions">
+      <button id="installPromptButton" class="primary hidden" onclick="triggerAndroidInstallPrompt()">Instalar app</button>
+      <button class="secondary" onclick="dismissInstallGuide()">Continuar no navegador</button>
+    </div>
+    <p id="installBrowserNote" class="install-note"></p>
+  </div>
+</section>
+
+<section id="setupScreen" class="setup-screen">
+<div class="setup-card">
+<h1>Configurar partida</h1>
+<div class="setup-grid">
+<label>Jogador 1<input id="p1" value="Jogador 1" /></label>
+<label>Jogador 2<input id="p2" value="Jogador 2" /></label>
+<label>Regra de vantagem<select id="advantage"><option value="true">Com vantagem</option><option value="false">Sem vantagem / No-Ad</option></select></label>
+<label>Games por set<select id="gamesPerSet"><option value="4">4 games</option><option value="6" selected>6 games</option></select></label>
+<label>Sets para vencer<select id="setsToWin"><option value="1">1 set</option><option value="2" selected>Melhor de 3</option><option value="3">Melhor de 5</option></select></label>
+<label>Sacador inicial<select id="firstServer"><option value="0">Jogador 1</option><option value="1">Jogador 2</option></select></label>
+<label>Fechamento do set<select id="setEndRule"><option value="tiebreak" selected>Tie-break no empate limite</option><option value="two_games">Sempre diferença de 2 games</option></select></label>
+<label>Set decisivo<select id="finalSetMode"><option value="normal" selected>Set normal</option><option value="super_tiebreak">Tie-breakão até 10 pontos</option></select></label>
+</div>
+<button class="primary" onclick="startMatch()">Iniciar partida</button>
+</div>
+</section>
+
+<section id="matchScreen" class="match-screen hidden">
+<header class="match-header">
+<div><div id="setInfo" class="set-info">Set 1 · Game 1</div><div id="serverInfo" class="server-info">Sacando: -</div></div>
+<div class="header-actions"><button class="secondary small" onclick="undo()">Desfazer</button><button class="secondary small" onclick="copySummary()">Copiar resumo</button><button class="secondary small" onclick="copyFull()">Copiar completo</button><button class="danger small" onclick="newMatch()">Nova</button></div>
+</header>
+<section class="landscape-board">
+<article id="playerCard0" class="player-panel">
+<div class="player-top"><div class="serve-line"><span id="serverBadge0" class="server-badge"></span><button id="serveFaultBtn0" class="serve-fault-btn hidden" onclick="serveFault()">Erro Saque</button></div><h2 id="name0">Jogador 1</h2></div>
+<div class="player-numbers"><div><span>Sets</span><strong id="sets0">0</strong></div><div><span>Games</span><strong id="games0">0</strong></div></div>
+<button class="point-btn" onclick="openPointOverlay(0)">Ponto</button>
+</article>
+<section class="center-panel">
+<div id="matchStatus" class="match-status">Partida em andamento</div>
+<div class="central-score"><span id="centralPoint0">0</span><span class="dash">×</span><span id="centralPoint1">0</span></div>
+<div id="ruleInfo" class="rule-info"></div>
+<div class="mini-history"><h3>Últimos games / tie-breaks</h3><div id="gamesHistory"></div></div>
+</section>
+<article id="playerCard1" class="player-panel">
+<div class="player-top"><div class="serve-line"><span id="serverBadge1" class="server-badge"></span><button id="serveFaultBtn1" class="serve-fault-btn hidden" onclick="serveFault()">Erro Saque</button></div><h2 id="name1">Jogador 2</h2></div>
+<div class="player-numbers"><div><span>Sets</span><strong id="sets1">0</strong></div><div><span>Games</span><strong id="games1">0</strong></div></div>
+<button class="point-btn" onclick="openPointOverlay(1)">Ponto</button>
+</article>
+</section>
+</section>
+
+<section id="pointOverlay" class="point-overlay hidden" aria-modal="true">
+<div class="overlay-panel">
+<div class="overlay-header"><div><h2 id="overlayTitle">Ponto para</h2><p id="overlayContext">Sacador: -</p></div><button class="secondary close-btn" onclick="closePointOverlay()">Cancelar</button></div>
+<div id="classificationButtons" class="classification-grid"></div>
+<div class="overlay-footer"><button id="repeatLastBtn" class="secondary" onclick="classifyPoint('__repeat__')">Repetir último tipo</button><button class="secondary" onclick="classifyPoint('unclassified')">Registrar sem classificar</button></div>
+</div>
+</section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
